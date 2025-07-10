@@ -10,7 +10,7 @@ st.set_page_config(page_title="Alfamart BSC Dashboard", layout="wide")
 st.title("📊 Alfamart Balanced Scorecard Dashboard (2021–2024)")
 # Footer
 st.markdown("---")
-st.caption("📊 Data dari Annual Report Alfamart 2021–2024 – Disusun oleh Riza Rumayanti Dewi")
+st.caption("📊 Data dari Alfamart BSC Dashboard 2021–2024 – Disusun oleh Riza Rumayanti Dewi")
 
 # =========================
 # DATA PREPARATION
