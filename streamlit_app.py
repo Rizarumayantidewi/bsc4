@@ -1,151 +1,147 @@
 import streamlit as st
 import pandas as pd
-import math
-from pathlib import Path
+import altair as alt
+from PIL import Image
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+# =========================
+# SETUP HALAMAN & LOGO
+# =========================
+st.set_page_config(page_title="Alfamart BSC Dashboard", layout="wide")
+st.title("📊 Alfamart Balanced Scorecard Dashboard (2021–2024)")
+st.title("by : Riza Rumayanti Dewi")
+# Load logo
+logo = Image.open("/workspaces/bsc4/data/logo-alfa.jpg")  # Ubah ke path logo kamu
+st.image(logo, width=150)
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# =========================
+# DATA PREPARATION
+# =========================
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# HRM (Learning & Growth)
+hrm_data = pd.DataFrame({
+    "Year": [2021, 2022, 2023, 2024],
+    "Average_Training_Hours": [50.37, 54.61, 76.56, 38.88],
+    "Turnover_Rate": [None, None, None, 2.83],
+    "Appraisal_Percentage": [None, None, None, 90.16]
+})
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+# Customer
+customer_data = pd.DataFrame({
+    "Year": [2021, 2022, 2023, 2024],
+    "NPS": [None, None, None, 85.82],
+    "Customer_Complaints": [3916, 3420, 5184, 7146],
+    "Resolution_Percentage": [100, 100, 92, 95],
+    "CSAT": [None, None, 86.08, None]
+})
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+# Internal Process
+internal_data = pd.DataFrame({
+    "Year": [2021, 2022, 2023, 2024],
+    "Inventory_Turnover": [8.20, 8.60, 8.30, 8.49],
+    "DSI": [44.51, 42.44, 43.90, 43.00],
+    "Receivables_Turnover": [48.39, 49.39, 45.20, 42.49]
+})
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+# Financial
+financial_data = pd.DataFrame({
+    "Year": [2021, 2022, 2023, 2024],
+    "Revenue_Million_Rp": [84904, 96925, 106945, 118227],
+    "Net_Profit_Million_Rp": [1989, 2907, 3484, 3220],
+    "Net_Profit_Margin": [2.34, 3.00, 3.26, 2.66],
+    "ROE": [22.09, 25.38, 22.19, 20.41],
+    "EPS": [47.9, 69.9, 81.97, 77.6]
+})
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+# =========================
+# SIDEBAR NAVIGASI
+# =========================
+menu = st.sidebar.radio("📂 Pilih Perspektif:", [
+    "1️⃣ HRM (Learning & Growth)",
+    "2️⃣ Customer",
+    "3️⃣ Internal Business Process",
+    "4️⃣ Financial"
+])
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+# =========================
+# HRM DASHBOARD
+# =========================
+if menu.startswith("1️⃣"):
+    st.header("💼 HRM (Learning & Growth) Dashboard")
 
-    return gdp_df
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📘 Avg. Training Hours (2024)", f"{hrm_data['Average_Training_Hours'][3]} jam")
+    col2.metric("🔁 Turnover Rate (2024)", f"{hrm_data['Turnover_Rate'][3]} %")
+    col3.metric("✅ Appraisal Coverage (2024)", f"{hrm_data['Appraisal_Percentage'][3]} %")
 
-gdp_df = get_gdp_data()
+    st.subheader("📈 Trend Rata-rata Jam Pelatihan")
+    chart = alt.Chart(hrm_data).mark_line(point=True, color="#035AA6").encode(
+        x="Year:O", y="Average_Training_Hours:Q"
+    ).properties(height=300)
+    st.altair_chart(chart, use_container_width=True)
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+# =========================
+# CUSTOMER DASHBOARD
+# =========================
+elif menu.startswith("2️⃣"):
+    st.header("🛒 Customer Perspective Dashboard")
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+    col1, col2, col3 = st.columns(3)
+    col1.metric("💬 NPS (2024)", "85.82")
+    col2.metric("📉 Total Keluhan (2024)", f"{customer_data['Customer_Complaints'][3]}")
+    col3.metric("✅ Penyelesaian Keluhan (2024)", f"{customer_data['Resolution_Percentage'][3]} %")
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+    st.subheader("📊 Tren Keluhan Pelanggan")
+    chart = alt.Chart(customer_data).mark_bar(color="#ED1F21").encode(
+        x="Year:O", y="Customer_Complaints:Q"
+    ).properties(height=300)
+    st.altair_chart(chart, use_container_width=True)
 
-# Add some spacing
-''
-''
+# =========================
+# INTERNAL PROCESS DASHBOARD
+# =========================
+elif menu.startswith("3️⃣"):
+    st.header("🏭 Internal Business Process Dashboard")
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🔁 Inventory Turnover (2024)", f"{internal_data['Inventory_Turnover'][3]}")
+    col2.metric("🗓️ DSI (2024)", f"{internal_data['DSI'][3]} hari")
+    col3.metric("💰 Receivables Turnover (2024)", f"{internal_data['Receivables_Turnover'][3]}")
 
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
+    st.subheader("📈 Inventory Turnover Over Time")
+    chart = alt.Chart(internal_data).mark_line(point=True, color="#FCD413").encode(
+        x="Year:O", y="Inventory_Turnover:Q"
+    ).properties(height=300)
+    st.altair_chart(chart, use_container_width=True)
 
-countries = gdp_df['Country Code'].unique()
+# =========================
+# FINANCIAL DASHBOARD
+# =========================
+elif menu.startswith("4️⃣"):
+    st.header("💵 Financial Dashboard")
 
-if not len(countries):
-    st.warning("Select at least one country")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📈 Total Revenue (2024)", f"{financial_data['Revenue_Million_Rp'][3]:,} M")
+    col2.metric("💰 Net Profit (2024)", f"{financial_data['Net_Profit_Million_Rp'][3]:,} M")
+    col3.metric("📊 Net Profit Margin (2024)", f"{financial_data['Net_Profit_Margin'][3]}%")
 
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
+    st.subheader("📈 Revenue vs Net Profit")
+    chart = alt.Chart(financial_data).transform_fold(
+        ['Revenue_Million_Rp', 'Net_Profit_Million_Rp'],
+        as_=['KPI', 'Value']
+    ).mark_line(point=True).encode(
+        x='Year:O',
+        y='Value:Q',
+        color='KPI:N'
+    ).properties(height=300)
+    st.altair_chart(chart, use_container_width=True)
 
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+    st.subheader("📉 ROE dan EPS")
+    chart2 = alt.Chart(financial_data).transform_fold(
+        ['ROE', 'EPS'],
+        as_=['Metric', 'Value']
+    ).mark_bar().encode(
+        x='Year:O',
+        y='Value:Q',
+        color='Metric:N'
+    ).properties(height=300)
+    st.altair_chart(chart2, use_container_width=True)
