@@ -10,7 +10,7 @@ st.set_page_config(page_title="Alfamart BSC Dashboard", layout="wide")
 st.title("📊 Alfamart Balanced Scorecard Dashboard (2021–2024)")
 st.title("by : Riza Rumayanti Dewi")
 # Load logo
-logo = Image.open("/bsc4/data/logo-alfa.jpg")  # Ubah ke path logo kamu
+logo = Image.open("logo-alfa.jpg")  # Ubah ke path logo kamu
 st.image(logo, width=150)
 
 # =========================
