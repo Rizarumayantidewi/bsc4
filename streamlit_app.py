@@ -8,9 +8,8 @@ from PIL import Image
 # =========================
 st.set_page_config(page_title="Alfamart BSC Dashboard", layout="wide")
 st.title("📊 Alfamart Balanced Scorecard Dashboard (2021–2024)")
-# Footer
-st.markdown("---")
-st.caption("📊 Data dari Alfamart BSC Dashboard 2021–2024 – Disusun oleh Riza Rumayanti Dewi")
+st.markdown("By: **Riza Rumayanti Dewi** | NIM: 20240130015 | MI24M")
+st.markdown("----")
 
 # =========================
 # DATA PREPARATION
@@ -144,3 +143,7 @@ elif menu.startswith("4️⃣"):
         color='Metric:N'
     ).properties(height=300)
     st.altair_chart(chart2, use_container_width=True)
+
+# Footer
+st.markdown("---")
+st.caption("📊 Data dari Alfamart BSC Dashboard 2021–2024 – Disusun oleh Riza Rumayanti Dewi")
